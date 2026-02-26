@@ -2,7 +2,7 @@
 Note: Currently using mock data
 """
 
-from utils.state import AgentState
+from src.utils.state import AgentState
 
 MOCK_RESTAURANTS = [
      {

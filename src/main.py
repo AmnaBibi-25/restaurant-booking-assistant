@@ -1,7 +1,7 @@
 """Restaurant Booking Assitant - Main Entry Point"""
 
 from dotenv import load_dotenv
-from graph import build_workflow
+from src.graph import build_workflow
 
 load_dotenv()
 
@@ -18,14 +18,30 @@ def print_results(result: dict) -> None:
     print(f"   Budget: ${result['budget_per_person']}/person" if result['budget_per_person'] else "   Budget: Not specified")
     print(f"   Location: {result['location']}")
     print(f"   Date/Time: {result['date']} at {result['time']}" if result['date'] else "   Date/Time: Not specified")
+
+    restaurants = result['dietary_matches']
+    if not restaurants:
+        print(f"\n No restaurants found matching your criteria")
+        return
+    
+    print(f"Found {len(restaurants)} Matching restaurants:")
+    print("-"*60)
+
     
     print(f"\n Found {len(result['restaurant_candidates'])} Restaurants:")
     for i, restaurant in enumerate(result['restaurant_candidates'], 1):
         print(f"\n   {i}. {restaurant['name']}")
         print(f"      Cuisine: {restaurant['cuisine']}")
         print(f"      Price: ${restaurant['price_range']}/person")
-        print(f"      Rating: {restaurant['rating']}⭐")
+        print(f"      Rating: {restaurant['rating']}*")
         print(f"      Location: {restaurant['location']}")
+
+        # Show matching dishes (from RAG)
+        if 'matching_dishes' in restaurant:
+            print(f" {result['dietary_requirements'].capitalize()} Options ({restaurant['matching_dish_count']} total):")
+            for dish in restaurant['matching_dishes'][:3]:  # Show top 3
+                print(f"{dish['name']} (${dish['price']})")
+
 
 
 def main():
@@ -46,6 +62,7 @@ def main():
     initial_state = {
         "user_query": user_query,
         "persons_count": None,
+        'dietary_requirements': None,
         "budget_per_person": None,
         "date": None,
         "time": None,
